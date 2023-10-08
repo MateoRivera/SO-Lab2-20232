@@ -4,7 +4,7 @@ Entrar en carpeta 'enunciado': <br />
 *ejecutar:* cd enunciado/
 
 Ejecutar Wish Shell: <br />
-*compilar:* gcc -Wall -o wish wish.c <br />
+*compilar:* gcc -o wish wish.c <br />
 *ejecutar:* ./wish
 
 Tests: <br />
