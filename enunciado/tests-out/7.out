@@ -1,8 +1,9 @@
 LinuxTutorial2.pdf
 README.md
-test-wish.sh
 tests
 tests-out
+test-wish.sh
 wish
-path executed
-path executed
+wish.c
+wish_utils.c
+wish_utils.h

@@ -4,14 +4,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
-#include "wish_utils.h"
+#include "wish_utils.c"
 
 void execute_command();
 void execute_batch_mode();
 void execute_user_mode();
 char error_message[30] = "An error has occurred\n";
 
-
+#define MAX_HISTORY 10
 #define MAX_SIZE 100
 
 char *mypath[] = {"/bin/", "", NULL, NULL, NULL, NULL};
@@ -70,6 +70,15 @@ void execute_user_mode(char *argv[]){
 	char *s;
 	int fd;
 
+	char *line = (char *)malloc(sizeof(char) * MAX_SIZE);
+
+    // Atributos para el command history
+    char ch;
+    char *history[MAX_HISTORY] = {NULL};
+    int history_idx = 0;
+    int line_idx = 0;
+    int history_count = 0;
+
 	do{
 		printf("whish> ");
 		fgets(str, MAX_SIZE, stdin);
@@ -98,6 +107,7 @@ void execute_user_mode(char *argv[]){
 
 void execute_command(char *command_string, char *s, char **mypath){
 	int fd;
+	char *command_args;
 
 	if(strcmp(command_string, "exit") == 0){
 				if( strcmp(s, "") != 0)
@@ -107,7 +117,9 @@ void execute_command(char *command_string, char *s, char **mypath){
 			}else if(strcmp(command_string, "cd") == 0){
 				execute_cd(s);
 			}else if(strcmp(command_string, "path") == 0){
-				execute_path();
+
+					command_args = trimString(command_string);
+                    execute_path(command_args);
 			}else{
 				fd = -1;
 				char **mp = mypath;
@@ -155,8 +167,8 @@ void navigate_command_history(char *history[], char *line, int *history_count, i
         if (*history_count > 0 && *history_idx > 0)
         {
             (*history_idx)--;
-            memset(line, 0, MAX_LINE_LENGTH);
-            strncpy(line, history[*history_idx], MAX_LINE_LENGTH - 1);
+            memset(line, 0, MAX_SIZE);
+            strncpy(line, history[*history_idx], MAX_SIZE - 1);
             *line_idx = strlen(line);
             printf("\033[2K\r%s", line);
             fflush(stdout);
@@ -167,8 +179,8 @@ void navigate_command_history(char *history[], char *line, int *history_count, i
         if (*history_count > 0 && *history_idx < *history_count - 1)
         {
             (*history_idx)++;
-            memset(line, 0, MAX_LINE_LENGTH);
-            strncpy(line, history[*history_idx], MAX_LINE_LENGTH - 1);
+            memset(line, 0, MAX_SIZE);
+            strncpy(line, history[*history_idx], MAX_SIZE - 1);
             *line_idx = strlen(line);
             printf("\033[2K\r%s", line);
             fflush(stdout);
