@@ -5,6 +5,7 @@
 #include "wish_utils.h"
 
 extern char error_message[30];
+extern char *mypath[];
 
 void execute_exit(int value){
 	if (value == 0){
@@ -25,6 +26,50 @@ void execute_cd(char *newpath){
 	}
 }
 
-void execute_path(){
-	printf("path executed\n");
+void execute_path(char *newpath)
+{
+    char *tokens[4];
+    char *token;
+    memset(tokens, 0, sizeof(tokens));
+    int c= 0;
+    token = strtok(newpath, " ");
+    
+    while (token != NULL)
+    {
+        tokens[c] = token;
+        token = strtok(NULL, " ");
+        c++;
+    }
+
+    //Si el path está vacío deja vacío el vector "mypath"
+    if (strcmp(tokens[0], ".") == 0) {
+        mypath[0] = "";
+        for (int i = 1; i < 6 && mypath[i] != NULL; i++) {
+            mypath[i] = NULL;
+        }
+        return;
+    }
+
+    for (int j = 0; j < c; j++)
+    {
+        strcpy(newpath, tokens[j]);
+        char **mp = mypath;
+        int i = 0;
+
+        while ((strcmp(*mp, "") != 0))
+        {
+            mp++;
+            i++;
+        }
+        // Dado el caso que el objeto definido newpath no exista en la variable previamente definida "mypath", se procede a insertarlo
+        mypath[i] = malloc(strlen(newpath) + 1);
+        strcpy(mypath[i], newpath);
+                // Valida que el formato del new path sea correcto (Debe terminar con "/")
+        if (strchr(mypath[i], '/') == NULL)
+        {
+            // Si el new path no tiene "/", lo añade al final
+            mypath[i] = strcat(mypath[i], "/");
+        }
+        mypath[i + 1] = "";
+    }
 }
