@@ -17,11 +17,11 @@
 char *mypath[] = {"/bin/", "", NULL, NULL, NULL, NULL};
 char error_message[30] = "An error has occurred\n";
 
-int closedRedirection = 0; // flag para devolver el control al usuario y que pueda seguir interactuando con la terminal
-int stdout_copy = 0;       // Varaible usada para la salida del comando a un archivo
+int closedRedirection = 0; // Con esta bandera se le devuelve al usuario el control, para que pueda seguir interactuando
+int stdout_copy = 0;       // Variable que se usa para la salida de un comando hacia un archivo
 
 
-// Función para la redirección
+// Redireccionamiento
 void redirection(char *line){
     int a = 0;
     char *redirections[sizeof(char) * 512];
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
 
     char *line = (char *)malloc(sizeof(char) * MAX_LINE_LENGTH);
 
-    // Atributos para el command history
+    // Variables requeridas para el histórico de comandos
     char ch;
     char *history[MAX_HISTORY] = {NULL};
     int history_idx = 0;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]){
     int history_count = 0;
     struct termios old_term, new_term;
 
-    //  Atributos  para el batch mode
+    //  Variables necesarias para el funcionamiento del modo Batch
     FILE *fp;
     size_t len = 0;
     ssize_t read;
@@ -100,61 +100,59 @@ int main(int argc, char *argv[]){
     char *tokens[4];
     char *token;
     int i;
-    if (argc == 2){ // Si hay 2 argumentos, significa que se entro un archivo para el batchmode
-        fp = fopen(argv[1], "r"); // Se intenta abrir el archivo que se entro como argumento
+    if (argc == 2){ // Dado el caso que se encuentren dos argumentos, significa que se entró un archivo para procesar en modo Batch
+        fp = fopen(argv[1], "r"); // Se abre el archivo que entró como argumento para procesar en modo Batch
         if (fp == NULL)
         {
             printError();
             execute_exit(1);
         }
     }
-    // Si no está en batch mode, imprime wish>
+    // Dado el caso que no sea modo Batch, se imprime el "whish"
     else if (argc == 1){
         set_terminal_raw_mode(&old_term, &new_term);
-        printf("wish> ");
+        printf("whish> ");
     }
-    // Unending loop to read input
+    // Ciclo infinito para leer las entradas
     while (1){
-        if (argc == 1){ // Se ejecuta esta linea en modo interactivo (no se ingreso un argumento para el batchmode)
+        if (argc == 1){ // Dado el caso que se entre en modo interactivo, se ejecuta esta condicional
             ch = getchar();
 
-            if (ch == '\033'){ // Escape sequence
+            if (ch == '\033'){ // Código de tecla Escape
                 navigate_command_history(history, line, &history_count, &history_idx, &line_idx, &ch);
             }
-            else if (ch == '\n'){ // Enter key
+            else if (ch == '\n'){ //Código de tecla Enter
                 add_command_to_history(history, line, &line_idx, &history_count, &history_idx);
                 fflush(stdout);
             }
-            else if (ch == 127){ // Backspace key
+            else if (ch == 127){ //Código de tecla Backspace
                 handle_backspace_key(line, &line_idx);
             }
-            else if (ch >= 32 && ch <= 126){ // Printable character
+            else if (ch >= 32 && ch <= 126){ // Caracteres imprimibles
                 handle_input(line, &line_idx, &ch);
             }
         }
-        else if (argc == 2){ // Si hay 2 argumentos, significa que se entro un archivo para el batchmode
-            read = getline(&line, &len, fp); // Se lee cada linea del archivo batch
+        else if (argc == 2){ // Se entró en modo batch, ya que se tienen dos argumentos
+            read = getline(&line, &len, fp); // Se procede a leer las líneas del archivo
             if (read == EOF){
                 break;
             }
         }
         // Modo de ejecución de comando (line). Se entra cuando se presiona Enter o cuando es Batchmode (argc==2)
         if (argc == 2 || ch == '\n'){
-            // Si no está en batch mode, imprime "wish> "
             if (argc == 1){
-                printf("wish> ");
+                printf("whish> ");
             }
 
-            // Reemplaza el último caracter de la línea por null (\0)
+            //Se reemplaza el último caracter de la línea por null (\0)
             newline_pos = strcspn(line, "\n");
             line[newline_pos] = '\0';
-            // inicializar array separando los comandos por el token &
 
             // Creamos un array para almacenar los tokens
             memset(tokens, 0, sizeof(tokens));
             i = 0;
 
-            // Utilizamos strtok para dividir la cadena en tokens
+            //Se utiliza la función strtok que nos permite dividir las cadenas por un carácter
             token = strtok(line, "&");
 
             while (token != NULL){
@@ -162,18 +160,18 @@ int main(int argc, char *argv[]){
                 token = strtok(NULL, "&");
             }
 
-            // Imprimimos cada token
+            // Se imprime cada token obtenido
             for (int j = 0; j < i; j++){
                 if (strstr(line, ">") != NULL){
                     redirection(line);
                 }
-                // Se separa el comando del argumento
+                // Y se procede a separar el comando, del argumento ingresado
                 command_args = trimString(tokens[j]);
                 command_string = strtok_r(command_args, " ", &command_args);
-                if (command_string == NULL){ // Si no se entra ningún comando, empieza el loop de nuevo
+                if (command_string == NULL){ //Dado el caso que no se ingrese ningún comando, se continúa con el loop
                     continue;
                 }
-                else if (command_args[0] == 0 || command_args[0] == 32){ // Si no se entra ningún argumento al comando, se coloca argumento "."
+                else if (command_args[0] == 0 || command_args[0] == 32){ //Dado el caso que no se añada ningún argumento, se le adiciona el caracter punto (.)
                     command_args = malloc(strlen(".") + 1);
                     strcpy(command_args, ".");
                 }
@@ -185,7 +183,7 @@ int main(int argc, char *argv[]){
                     execute_exit(0);
                 }
                 else if (strcmp(command_string, "cd") == 0){
-                    // Al no tener argumentos, se coloca el argumento "." y se imprime un error
+                    // Dado que no tiene argumentos, se coloca el caracter punto (.) y se imprime un error
                     if (strcmp(command_args, ".") == 0){
                         printError();
                         continue;
@@ -215,7 +213,7 @@ int main(int argc, char *argv[]){
                             myargs[0] = strdup(specificpath);
                             myargs[1] = strdup(command_args);
                             myargs[2] = NULL;
-                            // Si el comando es /bin/ls, se ejecuta "ls"
+                            //En caso de que el comando corresponda a "/bin/ls" se procede a ejecutar "ls"
                             if (strcmp(myargs[0], "/bin/ls") == 0){
                                 myargs[0] = "ls";
                             }
@@ -230,7 +228,7 @@ int main(int argc, char *argv[]){
                     }
                 }
             }
-            // Si no está en batch mode, limpia el anterior comando del input
+            //Dado el caso que no esté en modo batch, se limpia el comando anterior del input
             if (argc == 1){
                 memset(line, 0, MAX_LINE_LENGTH);
             }

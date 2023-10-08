@@ -14,7 +14,7 @@ void execute_exit(int value){
 
 void execute_cd(char *newpath){
     char *path = strtok_r(newpath, " ", &newpath);
-    // Si la dirección no es valida saca un error
+    // Dado el caso que la dirección no sea válida, se imprime un error
     if (chdir(path) != 0)
     {
         write(STDERR_FILENO, error_message, strlen(error_message));
@@ -37,7 +37,7 @@ void execute_path(char *newpath){
         c++;
     }
 
-    //Si el path está vacío deja vacío el vector "mypath"
+    //Dado el caso que el path se encuentre vacío, el vector mypath se deja vacío
     if (strcmp(tokens[0], ".") == 0) {
         mypath[0] = "";
         for (int i = 1; i < 6 && mypath[i] != NULL; i++) {
@@ -75,7 +75,7 @@ void printError(){
     write(STDERR_FILENO, error_message, strlen(error_message));
 }
 
-//Función para...
+//Función que toma una cadena de caracteres y elimina los espacios en blanco iniciales y finales
 char *trimString(char *str){
     int start = 0, end = strlen(str) - 1;
     while (isspace(str[start])){
