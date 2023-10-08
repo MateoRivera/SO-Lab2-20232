@@ -3,6 +3,6 @@
 
 void execute_exit(int exit_value);
 void execute_cd(char* newpath);
-void execute_path();
+void execute_path(char *newpath);
 
 #endif

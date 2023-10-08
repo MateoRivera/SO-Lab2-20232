@@ -4,30 +4,26 @@
 #include <unistd.h>
 #include "wish_utils.h"
 
-extern char error_message[30];
 extern char *mypath[];
+extern char error_message[];
+#define MAX_FILENAME 1024
 
 void execute_exit(int value){
-	if (value == 0){
-		exit(0);
-	}
-	else{
-		write(STDERR_FILENO, error_message, strlen(error_message));
-		return;
-	}
-	exit(value);
+    exit(value);
 }
 
 void execute_cd(char *newpath){
-	char *path = strtok_r(newpath, " ", &newpath);
-	
-	if (chdir(path) != 0){ // Si chdir es distinto de 0, hubo un error
-		write(STDERR_FILENO, error_message, strlen(error_message)); // Imprmimos el mensaje de error elegido por default
-	}
+    char *path = strtok_r(newpath, " ", &newpath);
+    // Si la dirección no es valida saca un error
+    if (chdir(path) != 0)
+    {
+        write(STDERR_FILENO, error_message, strlen(error_message));
+        return;
+    }
+    chdir(path);
 }
 
-void execute_path(char *newpath)
-{
+void execute_path(char *newpath){
     char *tokens[4];
     char *token;
     memset(tokens, 0, sizeof(tokens));
@@ -72,4 +68,22 @@ void execute_path(char *newpath)
         }
         mypath[i + 1] = "";
     }
+}
+
+// Función que imprime el mensaje de error
+void printError(){
+    write(STDERR_FILENO, error_message, strlen(error_message));
+}
+
+//Función para...
+char *trimString(char *str){
+    int start = 0, end = strlen(str) - 1;
+    while (isspace(str[start])){
+        start++;
+    }
+    while ((end >= start) && isspace(str[end])){
+        end--;
+    }
+    str[end + 1] = '\0';
+    return &str[start];
 }
